@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>HTML5 Canvas</title>
+    <link rel="icon" href="https://fav.farm/🔥" />
+  </head>
+  <body>
+    <canvas id="draw" width="800" height="800"></canvas>
+
+    <script>
+      const canvas = document.querySelector("canvas");
+      const ctx = canvas.getContext("2d");
+      // Gets the 2D drawing context of the canvas.
+      // ctx is a CanvasRenderingContext2D object, which provides methods to draw shapes, text, and images.
+      console.log(ctx);
+      // CanvasRenderingContext2D { canvas: canvas#draw, globalAlpha: 1, globalCompositeOperation: "source-over", strokeStyle: "#000000", fillStyle: "#000000", filter: "none", imageSmoothingEnabled: true, lineWidth: 1, lineCap: "butt", lineJoin: "miter" }
+
+      // Sets the canvas size to match the full window size, so the drawing area spans the entire browser window.
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      ctx.strokeStyle = "#BADA55"; // Initial stroke color is set. This value changes dynamically later in the draw() function.
+      ctx.lineJoin = "round"; // Makes the corners rounded where lines meet.
+      ctx.lineCap = "round"; // Makes line end caps rounded for a smoother appearance.
+      ctx.lineWidth = 0; // Starts with a line width of 0.
+      ctx.globalCompositeOperation = "multiply"; // This blends colors where they overlap, creating cool overlapping color effects. (other options= "screen", "overlay", "darken" etc)
+
+      let isDrawing = false; // Tracks if the mouse is pressed (drawing mode).
+      let lastX = 0; // lastX/lastY = Store the last mouse coordinates to draw a line from the previous point to the new one.
+      let lastY = 0;
+      let hue = 0; // Used to change the line color dynamically using HSL color values.
+      let direction = true; // Controls whether the line width is increasing or decreasing.
+
+      // Function triggered on mousemove events.
+      // Stops execution if isDrawing is false (mouse button not pressed).
+      function draw(e) {
+        if (!isDrawing) return;
+        console.log(e); // ex. mousemove { target: canvas#draw, buttons: 1, clientX: 134, clientY: 166, layerX: 138, layerY: 179 }
+
+        ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`; // Dynamically sets the stroke color using HSL.
+        ctx.beginPath(); // Starts a new path. Every time you draw a new line, you start a new path.
+        ctx.moveTo(lastX, lastY); // Moves the "pen" to the previous coordinates (starting point of the line)
+        ctx.lineTo(e.offsetX, e.offsetY); // Draws a line to the current mouse position (offsetX and offsetY are the mouse coordinates relative to the canvas).
+        ctx.stroke(); // Renders the line on the canvas.
+        [lastX, lastY] = [e.offsetX, e.offsetY]; // Updates the last known coordinates to the current mouse position. This ensures continuous drawing as the mouse moves.
+
+        // Increases hue by 1 each time the mouse moves, cycling through the color spectrum.
+        hue++;
+        // Resets to 0 when it reaches 360 (the maximum hue value in HSL).
+        if (hue >= 360) {
+          hue = 0;
+        }
+        // Reverses the direction of line width changes when it hits the min (1) or max (200).
+        if (ctx.lineWidth >= 200 || ctx.lineWidth <= 1) {
+          direction = !direction;
+        }
+        // Increases or decreases the line width based on the direction flag.
+        // This creates a "pulse" effect where the lines get thicker and thinner as you draw.
+        if (direction) {
+          ctx.lineWidth++;
+        } else {
+          ctx.lineWidth--;
+        }
+      }
+
+      // Attaches the draw() function to the mousemove event, so lines are drawn as the mouse moves.
+      document.documentElement.addEventListener("mousemove", draw);
+
+      // Sets isDrawing = true when the mouse button is pressed.
+      // Initializes lastX and lastY with the mouse position at the moment of the click.
+      document.documentElement.addEventListener("mousedown", (e) => {
+        isDrawing = true;
+        [lastX, lastY] = [e.offsetX, e.offsetY];
+      });
+
+      // Stops drawing when the mouse button is released (mouseup).
+      document.documentElement.addEventListener(
+        "mouseup",
+        () => (isDrawing = false)
+      );
+      // Stops drawing when the mouse leaves the canvas area (mouseout).
+      document.documentElement.addEventListener(
+        "mouseout",
+        () => (isDrawing = false)
+      );
+    </script>
+
+    <style>
+      html,
+      body {
+        margin: 0;
+      }
+    </style>
+  </body>
+</html>
